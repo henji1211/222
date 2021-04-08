@@ -34,7 +34,7 @@ hostname = app.hubonews.com
 const $ = new Env('西梅');
 let status;
 status = (status = ($.getval("ximeistatus") || "1") ) > 1 ? `${status}` : ""; // 账号扩展字符
-const ximeiurlArr = [], ximeihdArr = [],ximeicount = ''
+const ximeiurlArr = [https://app.hubonews.com/v4/articles/list], ximeihdArr = [{"Accept-Encoding":"br, gzip, deflate","Host":"app.hubonews.com","X_CLIENT_CHANNEL":"App Store","X_CLIENT_APP":"com.tigerye.tigerobo","X_CLIENT_PLATFORM":"iOS","Connection":"keep-alive","DEVICE_ID":"E183DEF8-3AF1-4D3F-B737-0EAD5D9DFF91","BRAND_PRODUCT":"Apple-iPhone8,1","X_CLIENT_TRANSLATION_LANGUAGE":"en","Accept-Language":"zh-Hans-CN;q=1","User-Agent":"tigerobo/2.6.4 (iPhone; iOS 11.3; Scale/2.00)","Content-Type":"application/json","X_CLIENT_IDFA":"79002F4C-D37E-48F5-AB96-91EC61DD7AB5","X_CLIENT_COUNTRY":"CN","X_CLIENT_VERSION":"2.6.4","Accept":"*/*","API_AUTHORIZATION":"NEphGUYsHABYgkbuudGr","X_CLIENT_BUILD":"220","X_CLIENT_LANGUAGE":"zh","Cookie":"aacfb33c8125789d_gr_session_id=b8f0c38f-73ff-43b0-9c10-78fdcf307719; aacfb33c8125789d_gr_session_id_b8f0c38f-73ff-43b0-9c10-78fdcf307719=true; gr_user_id=7306b0e0-085f-4838-9230-30512abe1e8c","Content-Length":"21"}],ximeicount = ''
 let times = Math.round(Date.now())
 let ximeiurl = $.getdata('ximeiurl')
 let ximeihd = $.getdata('ximeihd')
