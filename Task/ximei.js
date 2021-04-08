@@ -7,54 +7,28 @@
 稳定长期，一元提现
 多账号撸的不可退出账号，把当前西梅app删除了
 重新下载登录小号
-
-
 扫码打开 https://ae01.alicdn.com/kf/U8c71c1ac1f47422788561b0be3d4ea2ah.jpg
 微信扫码打开可领红包
-
-
-
 本脚本以学习为主！
 使用方法:打开西梅，首页推荐下拉刷新获得数据
-
 TG电报群: https://t.me/hahaha8028
-
 4.3更新西梅加入自动提现功能,不用再去微信提现了,请确保自己的账号已绑定微信
-
 boxjs地址 :  
-
 https://raw.githubusercontent.com/age174/-/main/feizao.box.json
-
-
 西梅
 圈X配置如下，其他软件自行测试，定时可以多设置几次，没任务会停止运行的
 [task_local]
 #西梅
 20 9 * * * https://raw.githubusercontent.com/age174/-/main/ximei.js, tag=西梅, img-url=https://ae01.alicdn.com/kf/Ucd02ea79ef22473daf3576486d134509Q.jpg, enabled=true
-
-
 [rewrite_local]
 #西梅
 https://app.hubonews.com/v3/articles/list url script-request-body https://raw.githubusercontent.com/age174/-/main/ximei.js
-
-
-
 #loon
 https://app.hubonews.com/v3/articles/list script-path=https://raw.githubusercontent.com/age174/-/main/ximei.js, requires-body=true, timeout=10, tag=西梅
-
-
-
 #surge
-
 西梅 = type=http-request,pattern=https://app.hubonews.com/v3/articles/list,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/age174/-/main/ximei.js,script-update-interval=0
-
-
-
-
 [MITM]
 hostname = app.hubonews.com
-
-
 */
 
 const $ = new Env('西梅');
