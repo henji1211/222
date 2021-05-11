@@ -14,7 +14,7 @@ var roomcount,unlockno,id
 let shouldplan0,shouldplant1,shouldplant2,shouldplan3,ahouldplant4
 let status;
 status = (status = ($.getval("ryhystatus") || "1") ) > 1 ? `${status}` : ""; // 账号扩展字符
-var ryhyheaderArr = ['{"bs":"CDMA","osVersion":"iOS 11.30","pkgId":"271","Host":"bp-api.coohua.com","Accept-Encoding":"br, gzip, deflate","deviceId":"79002F4C-D37E-48F5-AB96-91EC61DD7AB5","gps":"default","brand":"Apple","channel":"AppStore","Connection":"keep-alive","accessKey":"0cb67401f2374b2a1fa0b1a8677e721f_227683607","appVersion":"1.0.3","romVersion":"iOS 11.30","Accept-Language":"zh-cn","os":"iOS","Content-Type":"application/json","User-Agent":"ryhy-mobile/1 CFNetwork/897.15 Darwin/17.5.0","Accept":"*/*","oaid":"","blackBox":"","Content-Length":"37","wechatId":""}']
+var ryhyheaderArr = ['{"bs":"CDMA","osVersion":"iOS 12.40","pkgId":"271","Host":"bp-api.coohua.com","Accept-Encoding":"br, gzip, deflate","deviceId":"BD20FA03-440E-4969-82ED-EA6958312178","gps":"default","brand":"Apple","channel":"AppStore","Connection":"keep-alive","accessKey":"eb4c25c51c5b4953b3cc9a3f76d53740_227727948","appVersion":"1.0.3","romVersion":"iOS 12.40","Accept-Language":"zh-cn","os":"iOS","Content-Type":"application/json","User-Agent":"ryhy-mobile/1 CFNetwork/978.0.7 Darwin/18.7.0","Accept":"*/*","oaid":"","blackBox":"","Content-Length":"37","wechatId":""}']
 var ryhyadheaderArr = []
 var ryhyadbodyArr = []
 let ryhyheader = $.getdata('ryhyheader')
