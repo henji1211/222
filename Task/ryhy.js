@@ -1,25 +1,46 @@
 /*
+tgchannel：https://t.me/Ariszy_Script
+github：https://github.com/Ariszy/script
+boxjs：https://raw.githubusercontent.com/Ariszy/Private-Script/master/Ariszy.boxjs.json
 
-https://bp-api.coohua.com/bubuduo-ryhy/game/plant url script-request-header ryhy.js
+转载留个名字，谢谢
 
-https://bp-api.coohua.com/bubuduo-ryhy/ad/lookVideo url script-request-body ryhy.js
+作者：执意Ariszy
 
-hostname = bp-api.coohua.com
+#####笑谱app最新版V1.5.6
+天天领现金-每日签到领现金-点击随便一个任务，获取ck
+
+5.11 17:00开始制作
+5.11 22:00完成
+
+具体多大毛不知道，初步估计运行一次ok，0.5元左右，调整每次阅读延时25秒，为阅读20s➕跳转5s，手动阅读20s完成任务，故设置为20s，运行一次时间很长，请注意
+
+[mitm]
+hostname = lrqd.wasair.com
+
+#quanx
+[rewrite local]
+https://lrqd.wasair.com/advert/task/news/list url script-request-header https://raw.githubusercontent.com/Ariszy/Private-Script/master/Scripts/xpread.js
+
+#loon
+http-request https://lrqd.wasair.com/advert/task/news/list script-path=https://raw.githubusercontent.com/Ariszy/Private-Script/master/Scripts/xpread.js, requires-body=true, timeout=10, tag=笑谱阅读
+
+
+#surge
+笑谱阅读 = type=http-request,pattern=https://lrqd.wasair.com/advert/task/news/list,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/Ariszy/Private-Script/master/Scripts/xpread.js,script-update-interval=0
 */
-const zhiyi = '如意花园'
-const $ = Env(zhiyi)
+const Ariszy = '笑谱阅读'
+const $ = Env(Ariszy)
 const notify = $.isNode() ?require('./sendNotify') : '';
-let no,No,no0,no1,no2,no3,no4,no5,no6,no7,no8;
-var roomcount,unlockno,id
-let shouldplan0,shouldplant1,shouldplant2,shouldplan3,ahouldplant4
+var newsaid;
 let status;
-status = (status = ($.getval("ryhystatus") || "1") ) > 1 ? `${status}` : ""; // 账号扩展字符
-var ryhyheaderArr = ['{"bs":"CDMA","osVersion":"iOS 12.40","pkgId":"271","Host":"bp-api.coohua.com","Accept-Encoding":"br, gzip, deflate","deviceId":"BD20FA03-440E-4969-82ED-EA6958312178","gps":"default","brand":"Apple","channel":"AppStore","Connection":"keep-alive","accessKey":"eb4c25c51c5b4953b3cc9a3f76d53740_227727948","appVersion":"1.0.3","romVersion":"iOS 12.40","Accept-Language":"zh-cn","os":"iOS","Content-Type":"application/json","User-Agent":"ryhy-mobile/1 CFNetwork/978.0.7 Darwin/18.7.0","Accept":"*/*","oaid":"","blackBox":"","Content-Length":"37","wechatId":""}']
-var ryhyadheaderArr = []
-var ryhyadbodyArr = []
-let ryhyheader = $.getdata('ryhyheader')
-let ryhyadheader = $.getdata('ryhyadheader')
-let ryhyadbody = $.getdata('ryhyadbody')
+status = (status = ($.getval("xpreadstatus") || "1") ) > 1 ? `${status}` : ""; // 账号扩展字符
+var delay = ($.getval("delay") || 30)
+var xpreadCookieArr = ['{"X-Requested-With":"XMLHttpRequest","Connection":"keep-alive","Accept-Encoding":"br, gzip, deflate","Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","Origin":"https://lrqd.wasair.com","User-Agent":"Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E216","X-CSRF-TOKEN":"WNs2tKgwPCPP3yELcM0XbUYTXP7INTy1ZkUDDKFC","Cookie":"XSRF-TOKEN=eyJpdiI6InZPVzYrV0IxbjRIKzdDQUQ3Y0JtVXc9PSIsInZhbHVlIjoiUENJQk5ZeE9jQmlEa1wvRThzYTBpOXZmQVdLcE83U0NhNHNcL0xvMEVkRlpIcEg4YlFnQ0lFZWdPVlcyallxR214cHg0QXJlSUQ5R1wvbkhDalhXaklZamc9PSIsIm1hYyI6ImY2NGNjYWMyYTZhZjMyYmUzNThhNjkyMTdmOGE1YTM3M2FhNjk3NGZlODM5MGE0ZGRjNDFmNzQ2YTdhYWZlYzMifQ%3D%3D; laravel_session=eyJpdiI6Im5NSDM0YnhzbjBTWGNmRndpa2dwUGc9PSIsInZhbHVlIjoiYW01Zll0MW14c1JJRitxOTdXRHNwRmJpdXBnUUFKQXRmVjc0UkdBZnBTbkRQRHZcL0R2ZUFDalFudHZqMmhKNGJBR3pcL2VwczZiSFdkem0yXC9QWngrOHc9PSIsIm1hYyI6IjhkMTk5MGNlOGU1NGUyZjQ0MzJkOTQzNzM4ZjhmZjhlNjMxNGVlOGRmNWUyNTUyZWNkY2JiMzlhNzI3NTQ5NWQifQ%3D%3D; _idfa_device=eyJpdiI6Ims2UExVb0lOaDM2RmtDZFE0bGZsc2c9PSIsInZhbHVlIjoiRWNWdUhsQlwvd1daTXd4Qm54OHF6U2c9PSIsIm1hYyI6ImQ2NjM5ZTBiM2JjYzNlMjcyOGJhOWQ5NGI1NGIzY2VjMjMwM2Y1NWQ1MmRmNTk3MDE5ZWUxM2M3ZjMxZWRkM2QifQ%3D%3D; _imei_device=eyJpdiI6IkdCUU4xTnh2bERWUlZnT1NjZFY1aHc9PSIsInZhbHVlIjoiQzZKOVJPajVzUmJmU3JZRXBpXC9ONXc9PSIsIm1hYyI6IjExYmExNDJhMzI4NGRlZTMzODRjODZhNDc4NTVlZmNiZTFkMzk4ZmU1ZGMwNjU5Y2FjYzZjZDMyY2UwOTUzYmEifQ%3D%3D; _source_into_value=eyJpdiI6IjhOOHFMeTkzXC9pZDlDODdpaTJRaHl3PT0iLCJ2YWx1ZSI6Ik5sbCs4a0NxMmlMNWE5QXpDMEc0ZUJCQndaTjdEU1hVVmJscGthREVrcnZXRXY4ZEtORWpCK3YwRFQ3OGNjTWRzS1A5b1wvUjVVUjExaGJsaHZsQmZEUmg4NHhGdTVpNDBlY0lSc1VCQjlYUE9LTnY0cTVxeXYwS3J4VGt5S1dKRjBLTUZpbjhpVWIya3dieVBibTFoOGpVQkREc212dno2OUo2RFNscUlQSW5EM0cxWGF6NXIxeEhFWEFrRDdSVG82NnBNUElKdE1IcTJYRlhqcmNMS3V2UTdMNTgrRjhoSWt3eFVMZFF6UlJJPSIsIm1hYyI6ImNhN2IxM2I2M2YzZGY4OTg3NTUwMGZhOWQyNDEyNzJhYjFlZGQ5YjE0MDgxMmNkNTljNzMxYThiZTZjM2M1MjcifQ%3D%3D; _user_vip_identify=eyJpdiI6ImZVVU1FVm1YTzQxMXNsZWxcL3ptZHRBPT0iLCJ2YWx1ZSI6InN3c1hjcmVEYnNyU2RBXC9aQVwvS3NQdz09IiwibWFjIjoiMTg3MGNhY2YwZmM4OWUzMWU2NjdlMmMzNDE0YjI5MDg3NDMxMmY0M2FkYTg5MDlkZWNmYzVkMzZiOTEyMDE1ZSJ9; _user_vip_url=eyJpdiI6Ik9PY2kybGUrZ2V3M2w5WVpGYlRnNGc9PSIsInZhbHVlIjoianhYYU9zQ0c0ZmVsTUp2UTVBR3dWQT09IiwibWFjIjoiOTgzYmFmYTMzZDYwODk1YzZiNTMwYTAwODg3YmM5OTE0MDg5OWVmMGI1NGRiZTU1YThiZGYyYTYzMDViYzY3MiJ9","Referer":"https://lrqd.wasair.com/advert/task/con/transition","Host":"lrqd.wasair.com","Accept-Language":"zh-cn","Accept":"application/json, text/javascript, */*; q=0.01","Content-Length":"43"}']
+var newslist = new Array();
+let xpreadCookie = $.getdata('xpreadCookie')
+var xpreadtaskId = 15;
+var newscid = 11;
 let tz = ($.getval('tz') || '1');//0关闭通知，1默认开启
 const invite=1;//新用户自动邀请，0关闭，1默认开启
 const logs =0;//0为关闭日志，1为开启
@@ -38,554 +59,160 @@ if (isGetCookie) {
    GetCookie();
    $.done()
 } 
-
-ryhyheaderArr.push($.getdata('ryhyheader'))
-ryhyadheaderArr.push($.getdata('ryhyadheader'))
-ryhyadbodyArr.push($.getdata('ryhyadbody'))
-    let ryhycount = ($.getval('ryhycount') || '1');
-  for (let i = 2; i <= ryhycount; i++) {
-    ryhyheaderArr.push($.getdata(`ryhyheader${i}`))
-    ryhyadheaderArr.push($.getdata(`ryhyadheader${i}`))
-    ryhyadbodyArr.push($.getdata(`ryhtadbody${i}`))
+    xpreadCookieArr.push($.getdata('xpreadCookie'))
+    let xpreadcount = ($.getval('xpreadcount') || '1');
+  for (let i = 2; i <= xpreadcount; i++) {
+    xpreadCookieArr.push($.getdata(`xpreadCookie${i}`))
   }
 !(async () => {
-if (!ryhyheaderArr[0]) {
-    $.msg($.name, '【提示】请先获取如意花园一cookie')
+if (!xpreadCookieArr[0]) {
+    $.msg($.Ariszy, '【提示】请先获取笑谱阅读一Cookies')
     return;
   }
-   console.log(`------------- 共${ryhyheaderArr.length}账号----------------\n`)
-  for (let i = 0; i < ryhyheaderArr.length; i++) {
-    if (ryhyheaderArr[i]) {
+   console.log(`------------- 共${xpreadCookieArr.length}账号----------------\n`)
+  for (let i = 0; i < xpreadCookieArr.length; i++) {
+    if (xpreadCookieArr[i]) {
       message = ''
-      ryhyheader = ryhyheaderArr[i];
-      ryhyadheader = ryhyadheaderArr[i];
-      ryhyadbody = ryhyadbodyArr[i];
+      xpreadCookie = xpreadCookieArr[i];
       $.index = i + 1;
-      console.log(`\n开始【如意花园${$.index}】`)
-      await landmsg()
-      await haves()
-      await room() 
-      await list()
-      await plant()
-      await rewardlist()
-      await tasklist()
+      console.log(`\n开始【笑谱阅读${$.index}】`)
+      await newslists()
+    }
   }
- }
 })()
     .catch((e) => $.logErr(e))
     .finally(() => $.done())
     
     
 function GetCookie() {
-if($request&&$request.url.indexOf("plant")>=0) {
-   const ryhyheader = JSON.stringify($request.headers)
-    if(ryhyheader)    $.setdata(ryhyheader,`ryhyheader${status}`)
-    $.log(`[${zhiyi}] 获取ryhyheader请求: 成功,ryhyheader: ${ryhyheader}`)
-    $.msg(`ryhyheader${status}: 成功🎉`, ``)
-}
-if($request.url.indexOf("ad/lookVideo")>-1){
-   const ryhyadheader = JSON.stringify($request.headers)
-    if(ryhyadheader)
-$.setdata(ryhyadheader,`ryhyadheader${status}`)
-     $.log(`[${zhiyi}] 获取ryhyadheader请求: 成功,ryhyadheader: ${ryhyadheader}`)
-    $.msg(`ryhyadheader${status}: 成功🎉`, ``)
-   const ryhyadbody = $request.body
-   if(ryhyadbody)
-$.setdata(ryhyadbody,`ryhyadbody${status}`)
-      $.log(`[${zhiyi}] 获取ryhyadbody请求: 成功,ryhyadbody: ${ryhyadbody}`)
-    $.msg(`ryhyadbody${status}: 成功🎉`, ``)
-}
+if($request && $request.url.indexOf("news/list") > -1) {
+   const xpreadCookie = JSON.stringify($request.headers)
+    if(xpreadCookie)    $.setdata(xpreadCookie,`xpreadCookie${status}`)
+    $.log(`[${Ariszy}] 获取xpreadCookie请求: 成功,xpreadCookie: ${xpreadCookie}`)
+    $.msg(`xpreadCookie${status}: 成功🎉`, ``)
+  }
 }
 
-async function landmsg(){
- return new Promise((resolve) => {
-    let landmsg_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/message`,
-        headers: JSON.parse(ryhyheader)
-   	}
-   $.get(landmsg_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0){
-          if(result.result.gameMessage.find(item => item.unlock == 0)){
-          let landnos = result.result.gameMessage.find(item => item.unlock == 0)
-          unlockno = landnos.landIndex
-$.log(unlock)
-          await unlock();
-          await landmsg();
-}else{
-          $.log("所有土地都已经解锁\n")
-}
-    }
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function unlock(){
- return new Promise((resolve) => {
-    let unlock_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/unlock`,
-        headers: JSON.parse(ryhyheader),
-        body:`{"landIndex":${unlockno}}`
-   	}
-   $.post(unlock_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("土地解锁成功\n")
-        else
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-
-async function room(){
- return new Promise((resolve) => {
-    let room_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/order/msg`,
-        headers: JSON.parse(ryhyheader)
-   	}
-   $.get(room_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          roomlast = result.result.harvests
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function submit(){
- return new Promise((resolve) => {
-    let submit_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/order/reward`,
-        headers: JSON.parse(ryhyheader)
-   	}
-   $.get(submit_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("订单交付成功\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function list(){
- return new Promise((resolve) => {
-    let list_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/order/exchange/list`,
-        headers: JSON.parse(ryhyheader)
-   	}
-   $.post(list_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-  //var roomindexs = JSON.stringify(result.result.cashLimit.harvests).match(/index":\d+/g)
-/*for(let i = 0; i < roomindexs.length; i++){
-let yy = roomindexs[i].replace(/index":/,"")
-$.log("&&&&"+yy)
-   let roomcounts = result.result.cashLimit.harvests.find(item => item.index == yy).count
-   $.log("@@@@"+roomcounts)
-}*/
-  
-  var ww = result.result.list.find(item => item.finished == 0)
-  let qq = ww.tag.match(/\d+/) - 1
-  $.log(qq)
-  var indexs = JSON.stringify(result.result.list[qq].condition.harvestNeed).match(/index":\d+/g)+""
-//$.log(indexs)
-  let xx = indexs.replace(/index":/g,"")
-   //$.log("$$$$$"+xx.length)
-   if(xx.length == 1){
-   let count0 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[0]).count
-   $.log("count"+count0)
-
-   let roomcount0 = result.result.cashLimit.harvests.find(item => item.index == xx[0]).count
-   $.log("last"+roomcount0)
-
-   shouldplant0 = count0 - roomcount0
-   $.log(shouldplant0)
-}
-else if(xx.length == 3){
-let count0 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[0]).count
-   $.log("count"+count0)
-
-   let roomcount0 = result.result.cashLimit.harvests.find(item => item.index == xx[0]).count
-   $.log("last"+roomcount0)
-
-   shouldplant0 = count0 - roomcount0
-   $.log(shouldplant0)
-
-let count1 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[2]).count
-   $.log("count"+count1)
-
-   let roomcount1 = result.result.cashLimit.harvests.find(item => item.index == xx[2]).count
-   $.log("last"+roomcount1)
-
-   shouldplant1 = count1 - roomcount1
-   $.log(shouldplant1)
-}
-else{
-let count0 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[0]).count
-   $.log("count"+count0)
-
-   let roomcount0 = result.result.cashLimit.harvests.find(item => item.index == xx[0]).count
-   $.log("last"+roomcount0)
-
-   shouldplant0 = count0 - roomcount0
-   $.log(shouldplant0)
-
-let count1 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[2]).count
-   $.log("count"+count1)
-
-   let roomcount1 = result.result.cashLimit.harvests.find(item => item.index == xx[2]).count
-   $.log("last"+roomcount1)
-
-   shouldplant1 = count1 - roomcount1
-   $.log(shouldplant1)
-let count2 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[4]).count
-   $.log("count"+count2)
-
-   let roomcount2 = result.result.cashLimit.harvests.find(item => item.index == xx[4]).count
-   $.log("last"+roomcount2)
-
-   shouldplant2 = count2 - roomcount2
-   $.log(shouldplant2)
-
-let count3 = result.result.list[qq].condition.harvestNeed.find(item => item.index == xx[6]).count
-   $.log("count"+count3)
-
-   let roomcount3 = result.result.cashLimit.harvests.find(item => item.index == xx[6]).count
-   $.log("last"+roomcount0)
-
-   shouldplant3 = count3 - roomcount3
-   $.log(shouldplant3)
+function PostRequest(uri, body) {
+  const url = `https://lrqd.wasair.com/${uri}`;
+  const method = `POST`;
+  const headers = JSON.parse(xpreadCookie);
+  return {url: url, method: method, headers: headers, body: body};
 }
 
-if(shouldplant0 > 0) no0 = xx[0];
-else if(shouldplant0 <= 0 && shouldplant1 > 0) no0 = xx[2]
-else if(shouldplant0 <= 0 && shouldplant1 <= 0 && shouldplant2 > 0) no0 = xx[4]
-else if(shouldplant0 <= 0 && shouldplant1 <= 0 && shouldplant2 <= 0 && shouldplant3 > 0) no0 = xx[6]
-else{
-   $.log("任务完成，现在去提交订单\n")
-        await submit();
+function GetRequest(uri) {
+  const url = `https://lrqd.wasair.com/advert/task/news/detail/to?${uri}`;
+  const method = `GET`;
+  const headers = JSON.parse(xpreadCookie);
+  return {url: url, method: method, headers: headers};
+}
+async function newslists(){
+ let nowtime = new Date().getTime()
+ const body = `taskID=${xpreadtaskId}&weight=${nowtime}&getDateType=all&cid=${newscid}`;
+ const MyRequest = PostRequest('advert/task/news/list', body)
+ return new Promise((resolve) => {
+   $.post(MyRequest,async(error, response, data) =>{
+    try{
+        const result = JSON.parse(data) 
+        if(logs) $.log(data)
+        if(result.errorCode == 0){
+          console.log("开始获取阅读列表\n")
+          newslist = newslist.concat(result.data.news)
+          for(let i = 0; i < newslist.length; i++){
+           if(typeof (newslist[i].aid) != "undefined"){
+            newsaid = newslist[i].aid
+            //newscid = newslist[i].cid
+            let newstitle = newslist[i].title
+            $.log("开始阅读:"+newsaid+"\n"+newstitle)
+            await $.wait(200*delay)
+            await newsdetail()
+            await $.wait(800*delay)
+            await newscomplete()
+          }
+          }
+          if(xpreadtaskId == 15 && newscid == 11){
+            xpreadtaskId = 19;
+            newscid = 8;
+            console.log("开始阅读科技板块\n")
+            await newslists()
+          }
+          else if(xpreadtaskId == 19 && newscid == 8){
+            xpreadtaskId = 20;
+            newscid = 1;
+            console.log("开始阅读汽车板块\n")
+            await newslists()
+          }
+          else if(xpreadtaskId == 20 && newscid == 1){
+            xpreadtaskId = 26;
+            newscid = 9;
+            console.log("开始阅读房产板块\n")
+            await newslists()
+          }
+          else if(xpreadtaskId == 26 && newscid == 9){
+            xpreadtaskId = 22;
+            newscid = 3;
+            console.log("开始阅读时尚板块\n")
+            await newslists()
+          }
+          else if(xpreadtaskId == 22 && newscid == 3){
+            xpreadtaskId = 25;
+            newscid = 12;
+            console.log("开始阅读笑话板块\n")
+            await newslists()
+          }
+          else if(xpreadtaskId == 25 && newscid == 12){
+            xpreadtaskId = 21;
+            newscid = 2;
+            console.log("开始阅读健康板块\n")
+            await newslists()
+          }else if(xpreadtaskId == 21 && newscid == 2){
+            xpreadtaskId = 23;
+            newscid = 11;
+            console.log("开始阅读星座板块\n")
+            await newslists()
+          }
+        }
+        }catch(e) {
+          $.logErr(e, response);
+      } finally {
+        resolve();
+      } 
+    })
+   })
+  } 
+async function newsdetail(){
+ const MyRequest = GetRequest(`aid=${newsaid}&cid=${newscid}`)
+ return new Promise((resolve) => {
+   $.get(MyRequest,async(error, response, data) =>{
+    try{
+        //const result = JSON.parse(data)
+        if(logs)$.log(data)
+        }catch(e) {
+          $.logErr(e, response);
+      } finally {
+        resolve();
+      } 
+    })
+   })
+  } 
 
-}
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-
-async function plant(){
-      await plant0()
-      await plant1()
-      await plant2()
-      await plant3()
-      await plant4()
-      await plant5()
-      await plant6()
-      await plant7()
-      await plant8()
-}
-async function plant0(){
+async function newscomplete(){
+ const body = `taskId=${xpreadtaskId}&cid=${newscid}&aid=${newsaid}`;
+ const MyRequest = PostRequest('advert/task/complete', body)
  return new Promise((resolve) => {
-    let plant0_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":0,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant0_url,async(error, response, data) =>{
+   $.post(MyRequest,async(error, response, data) =>{
     try{
         const result = JSON.parse(data)
         if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant1(){
- return new Promise((resolve) => {
-    let plant1_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":1,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant1_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant2(){
- return new Promise((resolve) => {
-    let plant2_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":2,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant2_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant3(){
- return new Promise((resolve) => {
-    let plant3_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":3,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant3_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant4(){
- return new Promise((resolve) => {
-    let plant4_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":4,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant4_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant5(){
- return new Promise((resolve) => {
-    let plant5_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":5,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant5_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant6(){
- return new Promise((resolve) => {
-    let plant6_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":6,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant6_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant7(){
- return new Promise((resolve) => {
-    let plant7_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":7,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant7_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function plant8(){
- return new Promise((resolve) => {
-    let plant8_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/plant`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":8,"seedIndex":${no0},"way":1}`
-   	}
-   $.post(plant8_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("种植成功\n")
-        if(result.code == 50001)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  } 
-async function haves(){
-for(let i = 0; i < 9; i ++){
-no = i;
-await havest()
-//await $.wait(5000)
-}
-}
-async function havest(){
- return new Promise((resolve) => {
-    let havest_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/harvest`,
-        headers: JSON.parse(ryhyheader),
-        body: `{"landIndex":${no}}`
-   	}
-   $.post(havest_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("收获成功\n")
-        if(result.code == 50003)
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  }  
-async function lookVideo(){
- return new Promise((resolve) => {
-    let lookVideo_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/ad/lookVideo`,
-        headers: JSON.parse(ryhyadheader),
-        body: ryhyadbody
-   	}
-   $.post(lookVideo_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("观看成功\n")
-        else
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  }  
-async function cloud(){
- return new Promise((resolve) => {
-    let cloud_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/cloud/used`,
-        headers: JSON.parse(ryhyheader),
-        body: `null`
-   	}
-   $.post(cloud_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log("加速成功\n")
-        else
-          $.log(result.message+"\n")
+        if(result.errorCode == 0){
+          console.log("😄成功获得"+result.data.money+"\n") 
+        }else if(result.errorCode == 10331){
+           $.log("😫"+result.errorMsg+"\n")
+           await cash()
+           $done();
+        }else{
+           $.log("😫"+result.errorMsg+"\n")
+        }
         }catch(e) {
           $.logErr(e, response);
       } finally {
@@ -594,116 +221,20 @@ async function cloud(){
     })
    })
   }
-async function rewardlist(){
+async function cash(){
+ const body = ``;
+ const MyRequest = PostRequest('users/attr/cash', body)
  return new Promise((resolve) => {
-    let rewardlist_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/game/sign/reward/list`,
-        headers: JSON.parse(ryhyheader),
-   	}
-   $.post(rewardlist_url,async(error, response, data) =>{
+   $.post(MyRequest,async(error, response, data) =>{
     try{
         const result = JSON.parse(data)
         if(logs)$.log(data)
-        if(result.code == 0){
-          $.log("今日打卡进度："+result.result.cashLimit.todayVideoNum+"/"+result.result.signVideo+"\n")
-          $.log("总打卡进度："+result.result.cashLimit.signDays+"\n"+"打卡5天、10天、15天、20天、30天、50天、80天、100天、120天可以兑换，请兑换\n")
-      if(result.result.cashLimit.todayVideoNum < result.result.signVideo){
-        await lookVideo()
-        await cloud()
-}else{
-        console.log("今日打卡已经完成，不再进行云加速，如有需要请手动\n")
-}
-        }else
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  }
-async function tasklist(){
- return new Promise((resolve) => {
-    let tasklist_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/task/list`,
-        headers: JSON.parse(ryhyheader),
-       
-   	}
-   $.get(tasklist_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0){
-          let statues = data.match(/"state":\d/g)
-          let statu0 = statues[0].replace(/"state":/,"")
-          let statu1 = statues[1].replace(/"state":/,"")
-          let statu2 = statues[2].replace(/"state":/,"")
-          let statu3 = statues[3].replace(/"state":/,"")
-          let statu4 = statues[4].replace(/"state":/,"")
-          let statu5 = statues[5].replace(/"state":/,"")
-          let statu6 = statues[6].replace(/"state":/,"")
-          let statu7 = statues[7].replace(/"state":/,"")
-          if(statu0 == 2 && statu1 == 2 && statu2 == 2 && statu3 == 2 && statu4 == 2 && statu5 == 2 && statu6 == 2 && statu7 == 2){
-             $.log("每日福利已完成\n")
-             $.log("福利完成进度："+result.result.redNum+"/"+result.result.redNumLimit+"\n")
-          }else{
-         let taskid = data.match(/taskId":\d+/g)
-          //$.log(taskid)
-          for(let i = 0; i < taskid.length; i++){
-          id = taskid[i].replace(/taskId":/,"")
-          await getReward()
-          await daily()
-}
-}
-        }else
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  }
-async function getReward(){
- return new Promise((resolve) => {
-    let getReward_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/task/daily/getReward?taskId=${id}`,
-        headers: JSON.parse(ryhyheader),
-        
-   	}
-   $.post(getReward_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log(id+"任务完成\n")
-        else
-          $.log(result.message+"\n")
-        }catch(e) {
-          $.logErr(e, response);
-      } finally {
-        resolve();
-      } 
-    })
-   })
-  }
-async function daily(){
- return new Promise((resolve) => {
-    let daily_url = {
-   		url: `https://bp-api.coohua.com/bubuduo-ryhy/task/finish/daily?taskId=${id}`,
-        headers: JSON.parse(ryhyheader),
-        
-   	}
-   $.post(daily_url,async(error, response, data) =>{
-    try{
-        const result = JSON.parse(data)
-        if(logs)$.log(data)
-        if(result.code == 0)
-          $.log(id+"领取成功\n")
-        else
-          $.log(result.message+"\n")
+        if(result.errorCode == 0){
+          console.log("😄本次阅读完成，现有余额："+result.data.cash+"\n") 
+          $.msg("😄本次阅读完成，现有余额："+result.data.cash+"\n")
+        }else{
+           $.log("😫"+result.errorMsg+"\n")
+        }
         }catch(e) {
           $.logErr(e, response);
       } finally {
