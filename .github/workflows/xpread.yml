@@ -4,7 +4,7 @@ name: xpread
 on:
   workflow_dispatch:
   schedule:
-     - cron: '30 2 * * *'
+     - cron: '30 2，7 * * *'
   watch:
     types: started
 jobs:
