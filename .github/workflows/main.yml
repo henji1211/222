@@ -6,7 +6,7 @@ name: jd_shoplottery
 on:
     workflow_dispatch:
     schedule:
-        - cron: "3 23 * * *"
+        - cron: "5 23,3,10 * * *"
     watch:
         types: [started]
     repository_dispatch:
